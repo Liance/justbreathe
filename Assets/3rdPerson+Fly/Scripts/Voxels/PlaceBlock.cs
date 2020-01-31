@@ -7,7 +7,9 @@ public class PlaceBlock : MonoBehaviour
     [SerializeField]
     private bool isPlacingBlock;
     [SerializeField]
-    private GameObject blockPrefab;
+    private GameObject staticBlockPrefab;
+    [SerializeField]
+    private GameObject blockHolder;
     void Start()
     {
         
@@ -16,6 +18,15 @@ public class PlaceBlock : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(Input.GetMouseButtonDown(0))
+        {
+            isPlacingBlock = true;
+            var spawnedBlock = Instantiate(staticBlockPrefab, blockHolder.transform);
+            spawnedBlock.transform.position = transform.position;
+        }
+        else
+        {
+            isPlacingBlock = false;
+        }
     }
 }
