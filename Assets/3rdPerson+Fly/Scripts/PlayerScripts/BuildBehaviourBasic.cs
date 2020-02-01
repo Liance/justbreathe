@@ -107,6 +107,9 @@ public class BuildBehaviourBasic : GenericBehaviour
         originalBlockColor = ghostBlock.GetComponent<MeshRenderer>().material.color;  //Cache its original color so we can restore it later.
 		//Make the ghost block transparent and ghostly :)
 		ghostBlock.GetComponent<MeshRenderer>().material.color = new Color(1.0f, 1.0f, 1.0f, 1.0f * transparencyMultiplier);
+		//Disable collision on the ghost box while it's being "built"
+		var ghostCollider = ghostBlock.GetComponent<Collider>();
+		ghostCollider.enabled = false;
 	}
 
 	// Co-rountine to end aiming mode with delay.
@@ -127,8 +130,8 @@ public class BuildBehaviourBasic : GenericBehaviour
         if (ghostBlock != null)
 		{
 			isPlacingBlock = false;
-			var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
-			ghostBoxCollider.enabled = true;
+			var ghostCollider = ghostBlock.GetComponent<Collider>();
+			ghostCollider.enabled = true;
 			ghostBlock.GetComponent<MeshRenderer>().material.color = originalBlockColor;
 			ghostBlock = null;
         }
@@ -219,9 +222,8 @@ public class BuildBehaviourBasic : GenericBehaviour
 		ghostBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
 		// Always keep the ghost block oriented downwards.
 		ghostBlock.transform.rotation = Quaternion.Euler(0, 0, 0);
-		//Disable collision on the ghost box while it's being "built"
-		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
-		ghostBoxCollider.enabled = false;
+		var ghostCollider = ghostBlock.GetComponent<Collider>();
+		ghostCollider.enabled = false;
 
 	}
 
