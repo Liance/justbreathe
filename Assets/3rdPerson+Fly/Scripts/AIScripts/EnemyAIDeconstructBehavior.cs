@@ -137,11 +137,11 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
                     {
                         shortestDistToPlayer = distToPlayer;
                         targetStructureID = i;
-                        target = targetStructures[targetStructureID].transform;
-                        state = AIState.NAVIGATING;
-                        isWandering = false;
                     }
                 }
+                target = targetStructures[targetStructureID].transform;
+                state = AIState.NAVIGATING;
+                isWandering = false;
             }
             yield return wanderRefreshDuration;
         }
