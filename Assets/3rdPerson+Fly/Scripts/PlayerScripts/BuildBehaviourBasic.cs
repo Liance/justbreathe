@@ -10,6 +10,17 @@ public class BuildBehaviourBasic : GenericBehaviour
 	public Vector3 aimPivotOffset = new Vector3(0.5f, 1.2f, 0f);         // Offset to repoint the camera when aiming.
 	public Vector3 aimCamOffset = new Vector3(0f, 0.4f, -0.7f);         // Offset to relocate the camera when aiming.
 
+	[SerializeField]
+	private bool isPlacingBlock;
+	[SerializeField]
+	private GameObject staticBlockPrefab;
+	[SerializeField]
+	private GameObject blockHolder;
+	[SerializeField]
+	private float blockDistance = 5;
+	[SerializeField]
+	private GameObject ghostBlock;
+
 	private int aimBool;                                                  // Animator variable related to aiming.
 	private bool aim;                                                     // Boolean to determine whether or not the player is aiming.
 
@@ -66,7 +77,21 @@ public class BuildBehaviourBasic : GenericBehaviour
 			behaviourManager.GetAnim.SetFloat(speedFloat, 0);
 			// This state overrides the active one.
 			behaviourManager.OverrideWithBehaviour(this);
+			if (isPlacingBlock == false) //make sure we're not placing more than one block.
+				InstantiateBlock();
+			
 		}
+	}
+
+    void InstantiateBlock()
+    {
+		Vector3 frontOfPlayer = behaviourManager.playerCamera.TransformDirection(Vector3.forward);
+		//Instantiate a block in front of the player.
+		isPlacingBlock = true;
+		var spawnedBlock = Instantiate(staticBlockPrefab, blockHolder.transform);
+		spawnedBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
+        //Set the ghost block to the spawned block so we can manipulate it.
+		ghostBlock = spawnedBlock;
 	}
 
 	// Co-rountine to end aiming mode with delay.
@@ -78,6 +103,9 @@ public class BuildBehaviourBasic : GenericBehaviour
 		behaviourManager.GetCamScript.ResetMaxVerticalAngle();
 		yield return new WaitForSeconds(0.05f);
 		behaviourManager.RevokeOverridingBehaviour(this);
+		isPlacingBlock = false;
+		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
+		ghostBoxCollider.enabled = true;
 	}
 
 	// LocalFixedUpdate overrides the virtual function of the base class.
@@ -92,6 +120,7 @@ public class BuildBehaviourBasic : GenericBehaviour
 	public override void LocalLateUpdate()
 	{
 		AimManagement();
+		BlockManagement();
 	}
 
 	// Handle aim parameters when aiming is active.
@@ -132,4 +161,18 @@ public class BuildBehaviourBasic : GenericBehaviour
 										 crosshair.width, crosshair.height), crosshair);
 		}
 	}
+
+	//Position the ghost block while aiming.
+	void BlockManagement()
+	{
+		Vector3 frontOfPlayer = behaviourManager.playerCamera.TransformDirection(Vector3.forward);
+		ghostBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
+        // Always keep the ghost block oriented downwards.
+		ghostBlock.transform.rotation = Quaternion.Euler(0, 30, 0);
+		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
+		ghostBoxCollider.enabled = false;
+      
+	}
+
 }
+
