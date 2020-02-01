@@ -1,18 +1,14 @@
 fileFormatVersion: 2
-guid: b8bebbdd1bb6c405b8d4a8faa05a792a
+guid: 2b06a494a403da74190cec4247bc2d33
 ModelImporter:
   serializedVersion: 19300
-  internalIDToNameTable:
+  internalIDToNameTable: []
+  externalObjects:
   - first:
-      74: -500394842984897093
-    second: Sheep|Die
-  - first:
-      74: -587090916933014082
-    second: Sheep|Idle
-  - first:
-      74: 532299144428531816
-    second: Sheep|Walk
-  externalObjects: {}
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: No Name
+    second: {fileID: 2100000, guid: fa505519e7f70e74d83de9fa8e285ff4, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
@@ -43,7 +39,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 6
+    globalScale: 20
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -89,7 +85,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.06
+    globalScale: 20
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
