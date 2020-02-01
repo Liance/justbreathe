@@ -19,8 +19,12 @@ public class BuildBehaviourBasic : GenericBehaviour
 	[SerializeField]
 	private float blockDistance = 5;
 	[SerializeField]
-	private GameObject ghostBlock;
+    private GameObject ghostBlock;                                        // Variable to hold the block that's being built.
+	[SerializeField]
+    private float transparencyMultiplier = 0.5f;
 
+
+    private Color originalBlockColor;
 	private int aimBool;                                                  // Animator variable related to aiming.
 	private bool aim;                                                     // Boolean to determine whether or not the player is aiming.
 
@@ -92,6 +96,7 @@ public class BuildBehaviourBasic : GenericBehaviour
 		spawnedBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
         //Set the ghost block to the spawned block so we can manipulate it.
 		ghostBlock = spawnedBlock;
+		originalBlockColor = ghostBlock.GetComponent<MeshRenderer>().material.color;  //Cache its original color so we can restore it later.
 	}
 
 	// Co-rountine to end aiming mode with delay.
@@ -103,9 +108,11 @@ public class BuildBehaviourBasic : GenericBehaviour
 		behaviourManager.GetCamScript.ResetMaxVerticalAngle();
 		yield return new WaitForSeconds(0.05f);
 		behaviourManager.RevokeOverridingBehaviour(this);
+        // Make the ghost block "real" again.
 		isPlacingBlock = false;
 		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
 		ghostBoxCollider.enabled = true;
+		ghostBlock.GetComponent<MeshRenderer>().material.color = originalBlockColor;
 	}
 
 	// LocalFixedUpdate overrides the virtual function of the base class.
@@ -169,9 +176,11 @@ public class BuildBehaviourBasic : GenericBehaviour
 		ghostBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
         // Always keep the ghost block oriented downwards.
 		ghostBlock.transform.rotation = Quaternion.Euler(0, 30, 0);
+        //Disable collision on the ghost box while it's being "built"
 		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
 		ghostBoxCollider.enabled = false;
-      
+		//Make the ghost block transparent and ghostly :)
+		ghostBlock.GetComponent<MeshRenderer>().material.color = new Color (1.0f, 1.0f, 1.0f, 1.0f * transparencyMultiplier);      
 	}
 
 }
