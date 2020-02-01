@@ -20,27 +20,26 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
 
     private bool isWandering = false;
     private bool isNavigating = false;
-    private bool isDestroying = false;
+    private bool isPushing = false;
 
     public float viewingAngle = 60.0f;
     public float visibilityDist = 60.0f;
 
     private WaitForSeconds wanderRefreshDuration = new WaitForSeconds(1.0f);
-    private WaitForSeconds navigateRefreshDuration = new WaitForSeconds(1.0f);
+    private WaitForSeconds navigateRefreshDuration = new WaitForSeconds(2.5f);
     private WaitForSeconds pushRefreshDuration = new WaitForSeconds(1.0f);
 
     private Vector3 dirToPlayer = new Vector3();
     private Vector3 dirToLastSeenPlayer = new Vector3();
 
     public float waypointMinReachDist = 5.0f;
+    public float targetMinReachDist = 2.0f;
 
     public Transform highestObservableStructure;
     public float groundHeight = 0.0f;
     public float sturctureHeightThreshold = 3.0f;
 
-    public GameObject[] targetStructures;
-    public GameObject[] targetStructuresAboveHeightThreshold;
-    public int targetStructureID = 0;
+    public float pushforce = 500.0f;
 
     // Start is called before the first frame update
     void Start()
@@ -66,7 +65,6 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
         {
             agent.Move(agent.desiredVelocity);
         }
-        
         dirToPlayer = playerTransform.position - transform.position;
         switch (state)
         {
@@ -81,14 +79,14 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
                 if (!isNavigating)
                 {
                     isNavigating = true;
-                    StartCoroutine(NavigateToStructure());
+                    StartCoroutine(Navigate());
                 }
                 break;
             case AIState.PUSHING:
-                if (!isDestroying)
+                if (!isPushing)
                 {
-                    isDestroying = true;
-                    StartCoroutine(PushStructure());
+                    isPushing = true;
+                    StartCoroutine(Push());
                 }
                 break;
         }
@@ -125,51 +123,79 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
             {
                 SetNextWaypoint();
             }
-            targetStructures = GameObject.FindGameObjectsWithTag("Destructible");
-            
-            if (targetStructures.Any())
+            if(Vector3.Angle(transform.forward, dirToPlayer) <= viewingAngle)
             {
-                float shortestDistToPlayer = Mathf.Infinity;
-                for (int i = 0; i < targetStructures.Length; ++i)
-                {
-                    float distToPlayer = Vector3.Distance(targetStructures[i].transform.position, playerTransform.position);
-                    if (groundHeight + targetStructures[i].transform.position.y >= sturctureHeightThreshold && distToPlayer < shortestDistToPlayer)
+                if(playerTransform.position.y > sturctureHeightThreshold) {
+                    RaycastHit hit;
+                    if (Physics.Raycast(transform.position, dirToPlayer, out hit, visibilityDist, aiLayerMask))
                     {
-                        shortestDistToPlayer = distToPlayer;
-                        targetStructureID = i;
+                        if (hit.collider.tag.Equals("Destructible"))
+                        {
+                            target = hit.transform;
+                            state = AIState.NAVIGATING;
+                            isWandering = false;
+                        }
                     }
                 }
-                target = targetStructures[targetStructureID].transform;
-                state = AIState.NAVIGATING;
-                isWandering = false;
-            }
+            }          
             yield return wanderRefreshDuration;
         }
     }
 
-    private IEnumerator NavigateToStructure()
+    private IEnumerator Navigate()
     {
         while (isNavigating)
         {
-            if(Vector3.Distance(target.position, transform.position) <= waypointMinReachDist)
+            if(Vector3.Distance(target.position, transform.position) <= targetMinReachDist)
             {
                 state = AIState.PUSHING;
                 isNavigating = false;
+            }
+            if(Vector3.Distance(transform.position, playerTransform.position) <= targetMinReachDist)
+            {
+                transform.LookAt(playerTransform);
+                playerTransform.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * pushforce, ForceMode.Acceleration);
             }
             yield return navigateRefreshDuration;
         }
     }
 
-    private IEnumerator PushStructure()
+    private IEnumerator Push()
     {
-        while (isDestroying)
+        while (isPushing)
         {
-            transform.LookAt(target);
-            target.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 100.0f, ForceMode.Impulse);
-            //isDestroying = false;
-            state = AIState.WANDERING;
-            isDestroying = false;
+            target.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * pushforce, ForceMode.Impulse);
             yield return pushRefreshDuration;
+            if(Vector3.Distance(playerTransform.position, transform.position) < waypointMinReachDist)
+            {
+                transform.LookAt(playerTransform);
+                if (playerTransform.position.y > sturctureHeightThreshold)
+                {
+                    RaycastHit[] hits = Physics.RaycastAll(transform.position, dirToPlayer, visibilityDist, aiLayerMask);
+                    Vector3 lastStructurePos = new Vector3();
+                    foreach(RaycastHit rh in hits)
+                    {
+                        if(rh.distance < waypointMinReachDist)
+                        {
+                            lastStructurePos = rh.transform.position;
+                            rh.transform.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 10.0f, ForceMode.Impulse);
+                            yield return pushRefreshDuration;
+                            if (lastStructurePos == rh.transform.position)
+                            {
+                                target = playerTransform;
+                                target.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 10.0f, ForceMode.VelocityChange);
+                            }
+                        }
+                    }
+                }
+                state = AIState.WANDERING;
+                isPushing = false;
+            }
+            else
+            {
+                state = AIState.WANDERING;
+                isPushing = false;
+            }
         }
     }
 }
