@@ -151,11 +151,6 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
                 state = AIState.PUSHING;
                 isNavigating = false;
             }
-            if(Vector3.Distance(transform.position, playerTransform.position) <= targetMinReachDist)
-            {
-                transform.LookAt(playerTransform);
-                playerTransform.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * pushforce, ForceMode.Acceleration);
-            }
             yield return navigateRefreshDuration;
         }
     }
@@ -180,11 +175,6 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
                             lastStructurePos = rh.transform.position;
                             rh.transform.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 10.0f, ForceMode.Impulse);
                             yield return pushRefreshDuration;
-                            if (lastStructurePos == rh.transform.position)
-                            {
-                                target = playerTransform;
-                                target.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 10.0f, ForceMode.VelocityChange);
-                            }
                         }
                     }
                 }
