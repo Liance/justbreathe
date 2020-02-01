@@ -15,15 +15,15 @@ public class FlyBehaviour : GenericBehaviour
 	// Start is always called after any Awake functions.
 	void Start()
 	{
-		// Set up the references.
-		flyBool = Animator.StringToHash("Fly");
-		col = this.GetComponent<CapsuleCollider>();
+        // Set up the references.
+        flyBool = Animator.StringToHash("Fly");
+        col = this.GetComponent<CapsuleCollider>();
 		// Subscribe this behaviour on the manager.
 		behaviourManager.SubscribeBehaviour(this);
-	}
+    }
 
-	// Update is used to set features regardless the active behaviour.
-	void Update()
+    // Update is used to set features regardless the active behaviour.
+    void Update()
 	{
 		// Toggle fly by input, only if there is no overriding state or temporary transitions.
 		if (Input.GetButtonDown(flyButton) && !behaviourManager.IsOverriding() 

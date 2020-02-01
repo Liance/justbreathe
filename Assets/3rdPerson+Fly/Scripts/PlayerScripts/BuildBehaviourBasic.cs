@@ -83,21 +83,21 @@ public class BuildBehaviourBasic : GenericBehaviour
 			behaviourManager.OverrideWithBehaviour(this);
 			if (isPlacingBlock == false) //make sure we're not placing more than one block.
 				InstantiateBlock();
-			
-		}
-	}
+
+        }
+    }
 
     void InstantiateBlock()
     {
-		Vector3 frontOfPlayer = behaviourManager.playerCamera.TransformDirection(Vector3.forward);
+        Vector3 frontOfPlayer = behaviourManager.playerCamera.TransformDirection(Vector3.forward);
 		//Instantiate a block in front of the player.
 		isPlacingBlock = true;
 		var spawnedBlock = Instantiate(staticBlockPrefab, blockHolder.transform);
 		spawnedBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
         //Set the ghost block to the spawned block so we can manipulate it.
 		ghostBlock = spawnedBlock;
-		originalBlockColor = ghostBlock.GetComponent<MeshRenderer>().material.color;  //Cache its original color so we can restore it later.
-	}
+        originalBlockColor = ghostBlock.GetComponent<MeshRenderer>().material.color;  //Cache its original color so we can restore it later.
+    }
 
 	// Co-rountine to end aiming mode with delay.
 	private IEnumerator ToggleAimOff()
