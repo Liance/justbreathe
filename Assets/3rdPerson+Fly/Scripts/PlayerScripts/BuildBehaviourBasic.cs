@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 // AimBehaviour inherits from GenericBehaviour. This class corresponds to aim and strafe behaviour.
 public class BuildBehaviourBasic : GenericBehaviour
@@ -15,18 +16,22 @@ public class BuildBehaviourBasic : GenericBehaviour
 	[SerializeField]
 	private GameObject staticBlockPrefab;
 	[SerializeField]
+	private GameObject[] availableBlocks;
+    [SerializeField]
 	private GameObject blockHolder;
 	[SerializeField]
 	private float blockDistance = 5;
 	[SerializeField]
     private GameObject ghostBlock;                                        // Variable to hold the block that's being built.
 	[SerializeField]
-    private float transparencyMultiplier = 0.5f;
+    private float transparencyMultiplier = 0.8f;
 
 
-    private Color originalBlockColor;
+
+	private Color originalBlockColor;
 	private int aimBool;                                                  // Animator variable related to aiming.
 	private bool aim;                                                     // Boolean to determine whether or not the player is aiming.
+	private int currentlySelectedBlock = 0;                           // Float with which we make an ugly calculation to determine the currently selected block.
 
 	// Start is always called after any Awake functions.
 	void Start()
@@ -81,23 +86,28 @@ public class BuildBehaviourBasic : GenericBehaviour
 			behaviourManager.GetAnim.SetFloat(speedFloat, 0);
 			// This state overrides the active one.
 			behaviourManager.OverrideWithBehaviour(this);
-			if (isPlacingBlock == false) //make sure we're not placing more than one block.
-				InstantiateBlock();
 
+			if (isPlacingBlock == false) //make sure we're not placing more than one block.
+				InstantiateBlock(availableBlocks[currentlySelectedBlock]);   // Instantiate the currently selected box from the list.
+            
         }
     }
 
-    void InstantiateBlock()
+    void InstantiateBlock(GameObject chosenBlockPrefab)
     {
+        //Make sure we destroy any ghostblocks that remain attached to us for some reason.
+		Destroy(ghostBlock);
         Vector3 frontOfPlayer = behaviourManager.playerCamera.TransformDirection(Vector3.forward);
 		//Instantiate a block in front of the player.
 		isPlacingBlock = true;
-		var spawnedBlock = Instantiate(staticBlockPrefab, blockHolder.transform);
+		var spawnedBlock = Instantiate(chosenBlockPrefab, blockHolder.transform);
 		spawnedBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
         //Set the ghost block to the spawned block so we can manipulate it.
 		ghostBlock = spawnedBlock;
         originalBlockColor = ghostBlock.GetComponent<MeshRenderer>().material.color;  //Cache its original color so we can restore it later.
-    }
+		//Make the ghost block transparent and ghostly :)
+		ghostBlock.GetComponent<MeshRenderer>().material.color = new Color(1.0f, 1.0f, 1.0f, 1.0f * transparencyMultiplier);
+	}
 
 	// Co-rountine to end aiming mode with delay.
 	private IEnumerator ToggleAimOff()
@@ -108,11 +118,22 @@ public class BuildBehaviourBasic : GenericBehaviour
 		behaviourManager.GetCamScript.ResetMaxVerticalAngle();
 		yield return new WaitForSeconds(0.05f);
 		behaviourManager.RevokeOverridingBehaviour(this);
-        // Make the ghost block "real" again.
-		isPlacingBlock = false;
-		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
-		ghostBoxCollider.enabled = true;
-		ghostBlock.GetComponent<MeshRenderer>().material.color = originalBlockColor;
+		// Make the ghost block "real" again.
+		DropBlock();
+	}
+
+    void DropBlock()
+    {
+        if (ghostBlock != null)
+		{
+			isPlacingBlock = false;
+			var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
+			ghostBoxCollider.enabled = true;
+			ghostBlock.GetComponent<MeshRenderer>().material.color = originalBlockColor;
+			ghostBlock = null;
+        }
+		
+
 	}
 
 	// LocalFixedUpdate overrides the virtual function of the base class.
@@ -169,18 +190,39 @@ public class BuildBehaviourBasic : GenericBehaviour
 		}
 	}
 
-	//Position the ghost block while aiming.
+	// Position the ghost block while aiming.
 	void BlockManagement()
 	{
+		MaintainBlockPosition();
+		AllowBlockSwitching();
+	}
+
+    // Let the player switch between the blocks. At some point we'll want to insert the menu code here.
+    void AllowBlockSwitching()
+    {
+        // This is an awful piece of placeholder code that flips between blocks when you click.
+        if (Input.GetMouseButtonDown(0))
+        {
+			currentlySelectedBlock++;
+            if (currentlySelectedBlock >= availableBlocks.Length)
+            {
+				currentlySelectedBlock = 0;
+            }
+			InstantiateBlock(availableBlocks[currentlySelectedBlock]);
+
+        }
+    }
+
+    void MaintainBlockPosition()
+    {
 		Vector3 frontOfPlayer = behaviourManager.playerCamera.TransformDirection(Vector3.forward);
 		ghostBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
-        // Always keep the ghost block oriented downwards.
-		ghostBlock.transform.rotation = Quaternion.Euler(0, 30, 0);
-        //Disable collision on the ghost box while it's being "built"
+		// Always keep the ghost block oriented downwards.
+		ghostBlock.transform.rotation = Quaternion.Euler(0, 0, 0);
+		//Disable collision on the ghost box while it's being "built"
 		var ghostBoxCollider = ghostBlock.GetComponent<BoxCollider>();
 		ghostBoxCollider.enabled = false;
-		//Make the ghost block transparent and ghostly :)
-		ghostBlock.GetComponent<MeshRenderer>().material.color = new Color (1.0f, 1.0f, 1.0f, 1.0f * transparencyMultiplier);      
+
 	}
 
 }
