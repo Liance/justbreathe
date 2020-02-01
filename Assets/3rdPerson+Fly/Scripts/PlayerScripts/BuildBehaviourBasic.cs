@@ -10,6 +10,7 @@ public class BuildBehaviourBasic : GenericBehaviour
 	public float aimTurnSmoothing = 0.15f;                                // Speed of turn response when aiming to match camera facing.
 	public Vector3 aimPivotOffset = new Vector3(0.5f, 1.2f, 0f);         // Offset to repoint the camera when aiming.
 	public Vector3 aimCamOffset = new Vector3(0f, 0.4f, -0.7f);         // Offset to relocate the camera when aiming.
+	public string structureTag = "Destructible";
 
 	[SerializeField]
 	private bool isPlacingBlock;
@@ -102,7 +103,8 @@ public class BuildBehaviourBasic : GenericBehaviour
 		isPlacingBlock = true;
 		var spawnedBlock = Instantiate(chosenBlockPrefab, blockHolder.transform);
 		spawnedBlock.transform.position = transform.position + frontOfPlayer * blockDistance;
-        //Set the ghost block to the spawned block so we can manipulate it.
+		spawnedBlock.tag = structureTag;
+		//Set the ghost block to the spawned block so we can manipulate it.
 		ghostBlock = spawnedBlock;
         originalBlockColor = ghostBlock.GetComponent<MeshRenderer>().material.color;  //Cache its original color so we can restore it later.
 		//Make the ghost block transparent and ghostly :)

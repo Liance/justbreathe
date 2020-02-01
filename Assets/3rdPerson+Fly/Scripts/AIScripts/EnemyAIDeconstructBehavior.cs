@@ -8,7 +8,7 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
     private UnityEngine.AI.NavMeshAgent agent;
     public Transform target;
 
-    public enum AIState { WANDERING, NAVIGATING, DESTROYING }
+    public enum AIState { WANDERING, NAVIGATING, PUSHING }
     public GameObject[] wanderWaypoints;
     public int[] visitedWaypoints;
     public int currentWaypoint = 0;
@@ -27,13 +27,21 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
 
     private WaitForSeconds wanderRefreshDuration = new WaitForSeconds(1.0f);
     private WaitForSeconds navigateRefreshDuration = new WaitForSeconds(1.0f);
-    private WaitForSeconds destroyRefreshDuration = new WaitForSeconds(1.0f);
+    private WaitForSeconds pushRefreshDuration = new WaitForSeconds(1.0f);
 
     private Vector3 dirToPlayer = new Vector3();
     private Vector3 dirToLastSeenPlayer = new Vector3();
 
     public float waypointMinReachDist = 5.0f;
-    
+
+    public Transform highestObservableStructure;
+    public float groundHeight = 0.0f;
+    public float sturctureHeightThreshold = 3.0f;
+
+    public GameObject[] targetStructures;
+    public GameObject[] targetStructuresAboveHeightThreshold;
+    public int targetStructureID = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -50,7 +58,9 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
     void Update()
     {
         if (target != null)
+        {
             agent.SetDestination(target.position);
+        }
 
         if (agent.remainingDistance < agent.stoppingDistance)
         {
@@ -71,14 +81,14 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
                 if (!isNavigating)
                 {
                     isNavigating = true;
-                    StartCoroutine(NavigateToPlayer());
+                    StartCoroutine(NavigateToStructure());
                 }
                 break;
-            case AIState.DESTROYING:
+            case AIState.PUSHING:
                 if (!isDestroying)
                 {
                     isDestroying = true;
-                    StartCoroutine(DestroyStructure());
+                    StartCoroutine(PushStructure());
                 }
                 break;
         }
@@ -115,17 +125,51 @@ public class EnemyAIDeconstructBehavior : MonoBehaviour
             {
                 SetNextWaypoint();
             }
+            targetStructures = GameObject.FindGameObjectsWithTag("Destructible");
+            
+            if (targetStructures.Any())
+            {
+                float shortestDistToPlayer = Mathf.Infinity;
+                for (int i = 0; i < targetStructures.Length; ++i)
+                {
+                    float distToPlayer = Vector3.Distance(targetStructures[i].transform.position, playerTransform.position);
+                    if (groundHeight + targetStructures[i].transform.position.y >= sturctureHeightThreshold && distToPlayer < shortestDistToPlayer)
+                    {
+                        shortestDistToPlayer = distToPlayer;
+                        targetStructureID = i;
+                        target = targetStructures[targetStructureID].transform;
+                        state = AIState.NAVIGATING;
+                        isWandering = false;
+                    }
+                }
+            }
             yield return wanderRefreshDuration;
         }
     }
 
-    private IEnumerator NavigateToPlayer()
+    private IEnumerator NavigateToStructure()
     {
-        yield return navigateRefreshDuration;
+        while (isNavigating)
+        {
+            if(Vector3.Distance(target.position, transform.position) <= waypointMinReachDist)
+            {
+                state = AIState.PUSHING;
+                isNavigating = false;
+            }
+            yield return navigateRefreshDuration;
+        }
     }
 
-    private IEnumerator DestroyStructure()
+    private IEnumerator PushStructure()
     {
-        yield return destroyRefreshDuration;
+        while (isDestroying)
+        {
+            transform.LookAt(target);
+            target.gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * 100.0f, ForceMode.Impulse);
+            //isDestroying = false;
+            state = AIState.WANDERING;
+            isDestroying = false;
+            yield return pushRefreshDuration;
+        }
     }
 }
