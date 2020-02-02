@@ -85,6 +85,7 @@ public class FlyBehaviour : GenericBehaviour
 		// Add a force player's rigidbody according to the fly direction.
 		Vector3 direction = Rotating(horizontal, vertical);
 		behaviourManager.GetRigidBody.AddForce((direction * flySpeed * 100 * (behaviourManager.IsSprinting() ? sprintFactor : 1)), ForceMode.Acceleration);
+
 	}
 
 	// Rotate the player to match correct orientation, according to camera and key pressed.
