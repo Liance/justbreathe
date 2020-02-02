@@ -35,13 +35,14 @@ public class FlyBehaviour : GenericBehaviour
 			behaviourManager.UnlockTempBehaviour(behaviourManager.GetDefaultBehaviour);
 
 			// Obey gravity. It's the law!
-			behaviourManager.GetRigidBody.useGravity = !fly;
+			behaviourManager.GetRigidBody.useGravity = true;
 
 			// Player is flying.
 			if (fly)
 			{
 				// Register this behaviour.
 				behaviourManager.RegisterBehaviour(this.behaviourCode);
+                Debug.Log("flying registered");
 			}
 			else
 			{
@@ -76,15 +77,16 @@ public class FlyBehaviour : GenericBehaviour
 		// Set camera limit angle related to fly mode.
 		behaviourManager.GetCamScript.SetMaxVerticalAngle(flyMaxVerticalAngle);
 
-		// Call the fly manager.
-		FlyManagement(behaviourManager.GetH, behaviourManager.GetV);
+        // Call the fly manager.
+        if (behaviourManager.IsMoving())
+            FlyManagement(behaviourManager.GetH, behaviourManager.GetV);
 	}
 	// Deal with the player movement when flying.
 	void FlyManagement(float horizontal, float vertical)
 	{
 		// Add a force player's rigidbody according to the fly direction.
 		Vector3 direction = Rotating(horizontal, vertical);
-		behaviourManager.GetRigidBody.AddForce((direction * flySpeed * 100 * (behaviourManager.IsSprinting() ? sprintFactor : 1)), ForceMode.Acceleration);
+        behaviourManager.GetRigidBody.AddForce((direction * flySpeed), ForceMode.Acceleration);
 	}
 
 	// Rotate the player to match correct orientation, according to camera and key pressed.

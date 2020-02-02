@@ -339,16 +339,16 @@ public abstract class GenericBehaviour : MonoBehaviour
 	protected BasicBehaviour behaviourManager;     // Reference to the basic behaviour manager.
 	protected int behaviourCode;                   // The code that identifies a behaviour.
 	protected bool canSprint;                      // Boolean to store if the behaviour allows the player to sprint.
-
+    public bool isGrounded;
 	void Awake()
 	{
 		// Set up the references.
 		behaviourManager = GetComponent<BasicBehaviour> ();
 		speedFloat = Animator.StringToHash("Speed");
 		canSprint = true;
-
-		// Set the behaviour code based on the inheriting class.
-		behaviourCode = this.GetType().GetHashCode();
+        isGrounded = true;
+        // Set the behaviour code based on the inheriting class.
+        behaviourCode = this.GetType().GetHashCode();
 	}
 
 	// Protected, virtual functions can be overridden by inheriting classes.

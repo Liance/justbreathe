@@ -13,6 +13,8 @@ public class GameEnvironmentManager : MonoBehaviour
     private Text oxygenLevelText;
     [SerializeField]
     private Text gameOverText;
+    [SerializeField]
+    private Image oxygenLevelBar;
 
     private void Update()
     {
@@ -28,6 +30,7 @@ public class GameEnvironmentManager : MonoBehaviour
     public void SetOxygenLevelText()
     {
         oxygenLevelText.text = (OxygenLevel - NumberOfDomeHoles).ToString();
+        oxygenLevelBar.fillAmount = (OxygenLevel - NumberOfDomeHoles) / 100.0f;
     }
 
     public void SetGameOverText()

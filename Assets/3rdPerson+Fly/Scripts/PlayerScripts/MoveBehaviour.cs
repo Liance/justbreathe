@@ -23,7 +23,7 @@ public class MoveBehaviour : GenericBehaviour
 	{
 		// Set up the references.
 		jumpBool = Animator.StringToHash("Jump");
-		groundedBool = Animator.StringToHash("Grounded");
+        groundedBool = Animator.StringToHash("Grounded");
         if(behaviourManager.GetAnim)
 		    behaviourManager.GetAnim.SetBool(groundedBool, true);
 
@@ -104,8 +104,10 @@ public class MoveBehaviour : GenericBehaviour
 	// Deal with the basic player movement
 	void MovementManagement(float horizontal, float vertical)
 	{
-		// On ground, obey gravity.
-		if (behaviourManager.IsGrounded())
+        // On ground, obey gravity.
+        isGrounded = behaviourManager.IsGrounded();
+
+        if (behaviourManager.IsGrounded())
 			behaviourManager.GetRigidBody.useGravity = true;
 
 		// Avoid takeoff when reached a slope end.
