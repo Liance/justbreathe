@@ -19,7 +19,6 @@ public class SheepSpaceProgram : MonoBehaviour
         while (true)
         {
             Vector3 randomPos = new Vector3(Random.Range(-35.0f, 35.0f), Random.Range(0.0f, 50.0f), Random.Range(-35.0f, 35.0f));
-            Debug.Log("Spawned a sheep");
             Instantiate(sheepOfTruth, randomPos, new Quaternion(), null);
             yield return spawnCooldown;
         }
