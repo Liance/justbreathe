@@ -24,7 +24,8 @@ public class MoveBehaviour : GenericBehaviour
 		// Set up the references.
 		jumpBool = Animator.StringToHash("Jump");
 		groundedBool = Animator.StringToHash("Grounded");
-		behaviourManager.GetAnim.SetBool(groundedBool, true);
+        if(behaviourManager.GetAnim)
+		    behaviourManager.GetAnim.SetBool(groundedBool, true);
 
 		// Subscribe and register this behaviour as the default behaviour.
 		behaviourManager.SubscribeBehaviour(this);
@@ -45,7 +46,8 @@ public class MoveBehaviour : GenericBehaviour
 	// LocalFixedUpdate overrides the virtual function of the base class.
 	public override void LocalFixedUpdate()
 	{
-		// Call the basic movement manager.
+        // Call the basic movement manager.
+        Debug.Log(behaviourManager.GetH + " "+ behaviourManager.GetV);
 		MovementManagement(behaviourManager.GetH, behaviourManager.GetV);
 
 		// Call the jump manager.
@@ -113,10 +115,10 @@ public class MoveBehaviour : GenericBehaviour
 		}
 
 		// Call function that deals with player orientation.
-		Rotating(horizontal, vertical);
+		var playerDir = Rotating(horizontal, vertical);
 
 		// Set proper speed.
-		Vector2 dir = new Vector2(horizontal, vertical);
+		var dir = new Vector2(horizontal, vertical);
 		speed = Vector2.ClampMagnitude(dir, 1f).magnitude;
 		// This is for PC only, gamepads control speed via analog stick.
 		speedSeeker += Input.GetAxis("Mouse ScrollWheel");
@@ -126,8 +128,12 @@ public class MoveBehaviour : GenericBehaviour
 		{
 			speed = sprintSpeed;
 		}
+        if(behaviourManager.IsMoving())
+        {
+            behaviourManager.GetRigidBody.velocity += playerDir * walkSpeed;
+        }
 
-		behaviourManager.GetAnim.SetFloat(speedFloat, speed, speedDampTime, Time.deltaTime);
+        behaviourManager.GetAnim.SetFloat(speedFloat, speed, speedDampTime, Time.deltaTime);
 	}
 
 	// Remove vertical rigidbody velocity.

@@ -65,7 +65,8 @@ public class BuildBehaviourBasic : GenericBehaviour
 		}
 
 		// Set aim boolean on the Animator Controller.
-		behaviourManager.GetAnim.SetBool(aimBool, aim);
+        if(behaviourManager.GetAnim)
+		    behaviourManager.GetAnim.SetBool(aimBool, aim);
 	}
 
 	// Co-rountine to start aiming mode with delay.

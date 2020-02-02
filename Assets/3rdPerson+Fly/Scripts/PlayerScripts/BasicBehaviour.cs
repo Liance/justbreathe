@@ -67,8 +67,13 @@ public class BasicBehaviour : MonoBehaviour
 		v = Input.GetAxis("Vertical");
 
 		// Set the input axes on the Animator Controller.
-		anim.SetFloat(hFloat, h, 0.1f, Time.deltaTime);
-		anim.SetFloat(vFloat, v, 0.1f, Time.deltaTime);
+        if(anim)
+        {
+            anim.SetFloat(hFloat, h, 0.1f, Time.deltaTime);
+            anim.SetFloat(vFloat, v, 0.1f, Time.deltaTime);
+            // Set the grounded test on the Animator Controller.
+            anim.SetBool(groundedBool, IsGrounded());
+        }
 
 		// Toggle sprint by input.
 		sprint = Input.GetButton (sprintButton);
@@ -84,8 +89,7 @@ public class BasicBehaviour : MonoBehaviour
 			camScript.ResetFOV();
 			changedFOV = false;
 		}
-		// Set the grounded test on the Animator Controller.
-		anim.SetBool(groundedBool, IsGrounded());
+		
 	}
 
 	// Call the FixedUpdate functions of the active or overriding behaviours.

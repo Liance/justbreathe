@@ -59,7 +59,8 @@ public class FlyBehaviour : GenericBehaviour
 		fly = fly && behaviourManager.IsCurrentBehaviour(this.behaviourCode);
 
 		// Set fly related variables on the Animator Controller.
-		behaviourManager.GetAnim.SetBool(flyBool, fly);
+        if(behaviourManager.GetAnim)
+    		behaviourManager.GetAnim.SetBool(flyBool, fly);
 	}
 
 	// This function is called when another behaviour overrides the current one.
