@@ -8,7 +8,7 @@ public class PlayerStatsManager : MonoBehaviour
     public float currentOxygen;
 
     public float oxygenFlowPerRefresh = 1.0f;
-    public float oxygenAcquiredPerSheep;
+    public float oxygenAcquiredPerSheep = 10.0f;
 
     private WaitForSeconds depleteCooldown = new WaitForSeconds(2.0f);
 
